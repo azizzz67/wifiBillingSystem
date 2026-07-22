@@ -33,6 +33,7 @@ class ApiTest extends TestCase
         $created = $this->postJson('/api/customers', [
             'name' => 'Railway Customer', 'phone' => '+62 812 0000 0000', 'email' => 'railway@example.com',
             'address' => 'Jakarta', 'package' => 'STANDARD', 'status' => 'ACTIVE', 'payment' => 'UNPAID',
+            'password' => 'customer-secret',
         ])->assertCreated()->json('data');
 
         $this->assertDatabaseHas('customers', ['customer_code' => $created['id'], 'email' => 'railway@example.com']);
@@ -41,6 +42,11 @@ class ApiTest extends TestCase
             'name' => 'Railway Customer Updated', 'phone' => '+62 812 0000 0000', 'email' => 'railway@example.com',
             'address' => 'Bandung', 'package' => 'PREMIUM', 'status' => 'ACTIVE', 'payment' => 'PAID',
         ])->assertOk()->assertJsonPath('data.package', 'PREMIUM');
+
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check(
+            'customer-secret',
+            \App\Models\Customer::where('customer_code', $created['id'])->value('password'),
+        ));
 
         $this->deleteJson('/api/customers/'.$created['id'])->assertNoContent();
         $this->assertDatabaseMissing('customers', ['customer_code' => $created['id']]);

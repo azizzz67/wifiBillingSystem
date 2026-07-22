@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\InternetPackage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
@@ -40,6 +41,11 @@ class CustomerController extends Controller
         $data['customer_code'] = $this->nextCode();
         $data['internet_package_id'] = InternetPackage::where('name', $data['package'])->value('id');
         $data['payment_status'] = $data['payment'];
+        if (! empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
         unset($data['package'], $data['payment']);
         $customer = Customer::create($data)->load('internetPackage');
 
@@ -51,6 +57,11 @@ class CustomerController extends Controller
         $data = $this->validated($request, $customer);
         $data['internet_package_id'] = InternetPackage::where('name', $data['package'])->value('id');
         $data['payment_status'] = $data['payment'];
+        if (! empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
         unset($data['package'], $data['payment']);
         $customer->update($data);
 
@@ -74,6 +85,7 @@ class CustomerController extends Controller
             'package' => ['required', Rule::exists('internet_packages', 'name')],
             'status' => ['required', Rule::in(['ACTIVE', 'EXPIRED', 'SUSPENDED'])],
             'payment' => ['required', Rule::in(['PAID', 'UNPAID'])],
+            'password' => [$customer ? 'nullable' : 'required', 'string', 'min:8', 'max:72'],
         ]);
     }
 

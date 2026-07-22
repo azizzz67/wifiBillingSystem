@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import StatusBadge from '../components/StatusBadge';
 import { endpoints } from '../services/api';
 
-const emptyForm = { name: '', phone: '', email: '', address: '', package: 'BASIC', status: 'ACTIVE', payment: 'PAID' };
+const emptyForm = { name: '', phone: '', email: '', password: '', address: '', package: 'BASIC', status: 'ACTIVE', payment: 'PAID' };
 
 export default function Customers() {
     const navigate = useNavigate();
@@ -35,13 +35,14 @@ export default function Customers() {
 
     const openForm = (customer = null) => {
         setErrors({}); setModal(customer ? { type: 'edit', customer } : { type: 'add' });
-        setForm(customer || emptyForm);
+        setForm(customer ? { ...customer, password: '' } : emptyForm);
     };
     const save = async () => {
         const nextErrors = {};
         if (form.name.trim().length < 3) nextErrors.name = 'Nama minimal 3 karakter.';
         if (!/^\S+@\S+\.\S+$/.test(form.email)) nextErrors.email = 'Email tidak valid.';
         if (form.phone.trim().length < 9) nextErrors.phone = 'Nomor telepon tidak valid.';
+        if (modal.type === 'add' && form.password.length < 8) nextErrors.password = 'Kata sandi minimal 8 karakter.';
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length) return;
         try {
@@ -86,6 +87,7 @@ export default function Customers() {
                     <FormField label="FULL NAME" value={form.name} error={errors.name} onChange={(value) => setForm({ ...form, name: value })} />
                     <FormField label="EMAIL" value={form.email} error={errors.email} onChange={(value) => setForm({ ...form, email: value })} />
                     <FormField label="PHONE" value={form.phone} error={errors.phone} onChange={(value) => setForm({ ...form, phone: value })} />
+                    <FormField label={modal?.type === 'edit' ? 'NEW CUSTOMER PASSWORD (OPTIONAL)' : 'CUSTOMER PASSWORD'} value={form.password} error={errors.password} type="password" onChange={(value) => setForm({ ...form, password: value })} />
                     <label>PACKAGE<select value={form.package} onChange={(e) => setForm({ ...form, package: e.target.value })}><option>BASIC</option><option>STANDARD</option><option>PREMIUM</option></select></label>
                     <label>STATUS<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}><option>ACTIVE</option><option>EXPIRED</option></select></label>
                     <label>PAYMENT<select value={form.payment} onChange={(e) => setForm({ ...form, payment: e.target.value })}><option>PAID</option><option>UNPAID</option></select></label>
@@ -97,6 +99,6 @@ export default function Customers() {
     );
 }
 
-function FormField({ label, value, error, onChange }) {
-    return <label>{label}<input value={value} onChange={(e) => onChange(e.target.value)} className={error ? 'input-error' : ''} />{error && <small className="field-error">{error}</small>}</label>;
+function FormField({ label, value, error, onChange, type = 'text' }) {
+    return <label>{label}<input type={type} value={value} onChange={(e) => onChange(e.target.value)} className={error ? 'input-error' : ''} />{error && <small className="field-error">{error}</small>}</label>;
 }

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Complaint extends Model
 {
-    protected $fillable = ['ticket_number', 'customer_id', 'issue', 'description', 'priority', 'status', 'technician', 'resolved_at'];
+    protected $fillable = ['ticket_number', 'customer_id', 'issue', 'description', 'category', 'priority', 'status', 'technician', 'resolved_at'];
 
     protected function casts(): array
     {
